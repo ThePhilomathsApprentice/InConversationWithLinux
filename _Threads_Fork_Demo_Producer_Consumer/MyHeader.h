@@ -1,10 +1,12 @@
+#ifndef __MYHEADER_H
+#define __MYHEADER_H
+
 /* General Header Files. */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-/*Header Files for pipe IPC and shared memory */
-//#include <sys/ipc.h>
+/*Header Files for Shared memory */
 #include <sys/shm.h>
 
 /*defining the common key by which the process/applications will search for the shared memory region */
@@ -44,3 +46,4 @@ void * threadProd(void *ProdVPtr);
 
 pthread_t ThId;
 
+#endif
