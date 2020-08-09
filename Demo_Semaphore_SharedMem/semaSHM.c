@@ -54,14 +54,14 @@ int main()
     /* in it, with access only to the owner.                    */
     sem_set_id = semget(SEM_ID, 1, IPC_CREAT | 0600);
     if (sem_set_id == -1) {
-        perror("main: semget\n");
+        perror("semaSHM: ain: semget\n");
         exit(1);
     }
     
     semun_val.val = 1;    /* intialize the first (and the single) semaphore in our set to '1'. */
     rc = semctl(sem_set_id, 0, SETVAL, semun_val);
     if (rc == -1) {
-        perror("main: semctl\n");
+        perror("semaSHM: main: semctl\n");
         exit(1);
     }
 
@@ -71,7 +71,7 @@ int main()
         child_pid = fork();
         switch(child_pid) {
             case -1:
-                perror("fork");
+                perror("semaSHM: fork");
                 exit(1);
             case 0:  /* we're at child process. */
                     /* wait on the semaphore, unless it's value is non-negative. */
@@ -79,21 +79,23 @@ int main()
                     sem_op.sem_op = -1;
                     sem_op.sem_flg = 0;
                     semop(sem_set_id, &sem_op, 1);
-                    printf("Child with PID:%lu, PPID:%lu Entered SHM, SHM Locked.\n",getpid(), getppid());
+                    printf("semaSHM: ---------- Child with PID:%lu, PPID:%lu ----------\n",getpid(), getppid());
+                    printf("semaSHM: Entered SHM, SHM Locked.\n");
                     
                     id =  shmget(KEY1 , 4096 , IPC_CREAT|0600);
                     if(id<0){
-                        perror("error in shmget\n"); exit(1);
+                        perror("semaSHM: error in shmget\n"); exit(1);
                     }
                     shma = shmat(id,0,0);  
                     if(shma == (struct shmarea*)-1) { 
-                        perror("errro in shmat\n"); exit(2); 
+                        perror("semaSHM: errro in shmat\n"); exit(2); 
                     }
-                    printf("Initial pointer value is %xl\nAccessed from Child:\t%d\t%d\n", shma,shma->count1,shma->count2);
+                    printf("semaSHM: Initial pointer value is %xl\nsemaSHM: Accessed from Child:\t%d\t%d\n", shma,shma->count1,shma->count2);
                     shma->count1 += 10;
                     shma->count2 -= 20;
-                    printf("Pointer value is %xl\nManipulated from Child:\t%d\t%d\n", shma,shma->count1,shma->count2);
-                    printf("Child Exiting SHM, SHM UnLocked.\n");
+                    printf("semaSHM: Pointer value is %xl\nsemaSHM: Manipulated from Child:\t%d\t%d\n", shma,shma->count1,shma->count2);
+                    //printf("semaSHM: Child Exiting SHM, SHM UnLocked.\n");
+                    printf("semaSHM: ---------- Child Exiting SHM, SHM UnLocked. ---------- \n");
                     
                     sem_op.sem_num = 0;
                     sem_op.sem_op = 1;   /* <-- Comment 3 */
@@ -108,20 +110,22 @@ int main()
                 sem_op.sem_op = -1;
                 sem_op.sem_flg = 0;
                 semop(sem_set_id, &sem_op, 1);
-                printf("Parent with PID:%lu, PPID:%lu  Entered SHM, SHM Locked.\n", getpid(), getppid());
+                printf("semaSHM: ---------- Parent with PID:%lu, PPID:%lu ----------\n", getpid(), getppid());
+                printf("semaSHM: Entered SHM, SHM Locked.\n");
                 id =  shmget(KEY1 , 4096 , IPC_CREAT|0600);
                 if(id<0){
-                    perror("error in shmget\n"); exit(1);
+                    perror("semaSHM: error in shmget\n"); exit(1);
                 }
                 shma = shmat(id,0,0);  
                 if(shma == (struct shmarea*)-1) { 
-                    perror("errro in shmat\n"); exit(2); 
+                    perror("semaSHM: errro in shmat\n"); exit(2); 
                 }
-                printf("Initial pointer value is %xl\nAccessed from Parent:\t%d\t%d\n", shma,shma->count1,shma->count2);
+                printf("semaSHM: Initial pointer value is %xl\nsemaSHM: Accessed from Parent:\t%d\t%d\n", shma,shma->count1,shma->count2);
                 shma->count1 = 100;
                 shma->count2 = 200;
-                printf("Pointer value is %xl\nManipulated from Parent:\t%d\t%d\n", shma,shma->count1,shma->count2);
-                printf("Parent Exiting SHM, SHM UnLocked.\n");
+                printf("semaSHM: Pointer value is %xl\nsemaSHM: Manipulated from Parent:\t%d\t%d\n", shma,shma->count1,shma->count2);
+                //printf("semaSHM: Parent Exiting SHM, SHM UnLocked.\n");
+                printf("semaSHM: ---------- Parent Exiting SHM, SHM UnLocked. ---------- \n");
                 
                 sem_op.sem_num = 0;
                 sem_op.sem_op = 1;
@@ -137,11 +141,11 @@ int main()
             ret = waitpid(-1,&status,0);
             if(ret<0) { 
                 //pause();
-                printf("Values of shared memory counter is:\t%d\t%d\n",shma->count1,shma->count2);
+                printf("semaSHM: Values of shared memory counter is:\t%d\t%d\n",shma->count1,shma->count2);
                 exit(0);
             } //no child is in any state for this process
         }
-        printf("main: we're done\n");
+        printf("semaSHM: main: we're done\n");
     }
 
     return 0;
