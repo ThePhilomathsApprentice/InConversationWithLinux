@@ -33,7 +33,7 @@ int main()
 	   perror("shmInit:error in shmat\n"); exit(2); 
    }
    else{
-        printf("shmInit:Entered Init, Initialized to 0 \n");
+        printf("shmInit(%d): Entered Init, Initializid to 0 \n",id);
    }
 
    shma->count1 = 0;
