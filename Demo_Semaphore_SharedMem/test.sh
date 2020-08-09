@@ -1,5 +1,5 @@
 gcc shmInit.c -o shmInit
-gcc semSHM.c -o semaSHM
+gcc semaSHM.c -o semaSHM
 gcc shmDInit.c -o shmDInit
 
 taskset 0x00000001 ./shmInit
