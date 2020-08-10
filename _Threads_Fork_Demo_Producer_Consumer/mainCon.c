@@ -34,8 +34,8 @@ int main()
 
 void * threadCons(void *ConsVPtr){
   char value; // creating a buffer variable to save the data recieved from the producer temporarily.
-  while(1){
     printf("----------------Consumer Entered CSection----------------\nWaiting for the Producer to produce content to be read here, and free the semaphore...\n");
+  while(1){
     
     sem_wait( &(shma->sema2) ); // Decrement the thread semaphore to enter the critical section and modify.
     pthread_mutex_lock ( &(shma->mutex) ); // lock the mutex to get extra protection.
@@ -52,9 +52,9 @@ void * threadCons(void *ConsVPtr){
     pthread_mutex_unlock ( &(shma->mutex) );  // UNlock the mutex which was used to get low-level protection.
     sem_post( &(shma->sema1) ); // Increment the other thread semaphore to exit the critical section and indicate the producer to get active and start producing the data..
     
-    printf("----------------Consumer Exited CSection----------------\n"); // indicates that the thread has exited the critical section and the producer must produce new data now..
     
   }//threadCons:while:end
+    printf("----------------Consumer Exited CSection----------------\n"); // indicates that the thread has exited the critical section and the producer must produce new data now..
 
   pthread_exit(0);
 
