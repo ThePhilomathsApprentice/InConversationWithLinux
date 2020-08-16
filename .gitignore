@@ -1,3 +1,5 @@
 /Demo_Semaphore_SharedMem/semaSHM
 /Demo_Semaphore_SharedMem/shmDInit
 /Demo_Semaphore_SharedMem/shmInit
+/Threads_Fork_Demo_Producer_Consumer/mainCon
+/Threads_Fork_Demo_Producer_Consumer/mainProd
