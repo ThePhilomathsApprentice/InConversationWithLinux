@@ -1,22 +1,8 @@
-#include<sys/types.h>
-#include<unistd.h>
-#include<sys/wait.h>
-#include<sys/shm.h>
-#include<sys/ipc.h>
+#include "myHeader.h"
 
-#include<stdio.h>
-#include<stdlib.h>
+extern SHM *shma;// Global pointer to struct shmarea (aka SHM) initialized.
 
-#define KEY1 1995
-
-typedef struct shmarea {
-  int count1;
-  int count2;
-}SHM; 
-
-SHM *shma;// Global pointer to struct shmarea (aka SHM) initialized.
-
-int main()
+int shmDInit()
 {
 
    int ret,status,id;
@@ -38,6 +24,8 @@ int main()
 
    shma->count1 = 0;
    shma->count2 = 0;
+
+   
    return 0;
 }
 

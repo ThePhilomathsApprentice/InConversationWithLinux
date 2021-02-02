@@ -1,43 +1,15 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include "myHeader.h"
 
-#include <unistd.h>    /* fork(), etc.                        */
-#include <time.h>      /* nanosleep(), etc.                   */
-#include <sys/types.h> /* various type definitions.           */
-#include <sys/ipc.h>   /* general SysV IPC structures         */
-#include <sys/sem.h>   /* semaphore functions and structs.    */
-#include <sys/wait.h>  /* wait(), etc.                        */
+SHM *shma = NULL;// Global pointer to struct shmarea (aka SHM) initialized.
 
-/*header files for shared memory. */
-#include <sys/shm.h>
-
-#define KEY1 1995 /* This is the Key of the shared Memory. */
-
-#define CHLD_PROCS 2 /* number of processes to launch.      */
-#define SEM_ID 250   /* ID for the semaphore.               */
-
-union semun
-{
-    int val;                   /* value for SETVAL */
-    struct semid_ds *buf;      /* buffer for IPC_STAT, IPC_SET */
-    unsigned short int *array; /* array for GETALL, SETALL */
-    struct seminfo *__buf;     /* buffer for IPC_INFO */
-};
-
-typedef struct shmarea
-{
-
-    int count1;
-    int count2;
-
-} SHM; /*The structure of data that is on the shared memory. */
-
-SHM *shma; /*I will use this pointer to acess the shared memory segment. */
+int shmDInit();
+int shmInit();
 
 int main()
 {
     /*ParentChildInfo */
-    int child_pid, ret, status; /* PID of our child process. */
+    int child_pid[CHLD_PROCS]; /* PID of our child process. */
+    int ret, status;
 
     /*Shared Memoryinfo*/
     int id;
@@ -49,6 +21,8 @@ int main()
     int rc;                /* return value of system calls.  */
 
     struct sembuf sem_op; /* structure for semaphore operations. */
+
+    shmInit();
 
     /* create a semaphore set with ID 250, with one semaphore   */
     /* in it, with access only to the owner.                    */
@@ -70,9 +44,8 @@ int main()
     /* create a set of child processes that will compete on the semaphore */
     for (i = 0; i < CHLD_PROCS; i++)
     {
-        //while(i++ < CHLD_PROCS){
-        child_pid = fork();
-        switch (child_pid)
+        child_pid[i] = fork();
+        switch (child_pid[i])
         {
         case -1:
             perror("semaSHM: fork");
@@ -84,7 +57,7 @@ int main()
             sem_op.sem_op = -1;
             sem_op.sem_flg = 0;
             semop(sem_set_id, &sem_op, 1);
-            printf("semaSHM: ---------- Child with PID:%lu, PPID:%lu ----------\n", getpid(), getppid());
+            printf("semaSHM: ---------- Child with PID:%u, PPID:%u ----------\n", getpid(), getppid());
             printf("semaSHM: Entered SHM, SHM Locked.\n");
 
             id = shmget(KEY1, 4096, IPC_CREAT | 0600);
@@ -99,10 +72,10 @@ int main()
                 perror("semaSHM: errro in shmat\n");
                 exit(2);
             }
-            printf("semaSHM: Initial pointer value is %xl\nsemaSHM: Accessed from Child:\t%d\t%d\n", shma, shma->count1, shma->count2);
+            printf("semaSHM: Initial pointer value is %p\nsemaSHM: Accessed from Child:\t%d\t%d\n", shma, shma->count1, shma->count2);
             shma->count1 += 10;
             shma->count2 -= 20;
-            printf("semaSHM: Pointer value is %xl\nsemaSHM: Manipulated from Child:\t%d\t%d\n", shma, shma->count1, shma->count2);
+            printf("semaSHM: Pointer value is %p\nsemaSHM: Manipulated from Child:\t%d\t%d\n", shma, shma->count1, shma->count2);
             //printf("semaSHM: Child Exiting SHM, SHM UnLocked.\n");
             printf("semaSHM: ---------- Child Exiting SHM, SHM UnLocked. ---------- \n");
 
@@ -119,7 +92,7 @@ int main()
             sem_op.sem_op = -1;
             sem_op.sem_flg = 0;
             semop(sem_set_id, &sem_op, 1);
-            printf("semaSHM: ---------- Parent with PID:%lu, PPID:%lu ----------\n", getpid(), getppid());
+            printf("semaSHM: ---------- Parent with PID:%u, PPID:%u ----------\n", getpid(), getppid());
             printf("semaSHM: Entered SHM, SHM Locked.\n");
             id = shmget(KEY1, 4096, IPC_CREAT | 0600);
             if (id < 0)
@@ -133,10 +106,10 @@ int main()
                 perror("semaSHM: errro in shmat\n");
                 exit(2);
             }
-            printf("semaSHM: Initial pointer value is %xl\nsemaSHM: Accessed from Parent:\t%d\t%d\n", shma, shma->count1, shma->count2);
+            printf("semaSHM: Initial pointer value is %p\nsemaSHM: Accessed from Parent:\t%d\t%d\n", shma, shma->count1, shma->count2);
             shma->count1 = 100;
             shma->count2 = 200;
-            printf("semaSHM: Pointer value is %xl\nsemaSHM: Manipulated from Parent:\t%d\t%d\n", shma, shma->count1, shma->count2);
+            printf("semaSHM: Pointer value is %p\nsemaSHM: Manipulated from Parent:\t%d\t%d\n", shma, shma->count1, shma->count2);
             //printf("semaSHM: Parent Exiting SHM, SHM UnLocked.\n");
             printf("semaSHM: ---------- Parent Exiting SHM, SHM UnLocked. ---------- \n");
 
@@ -149,20 +122,24 @@ int main()
         } /*End of Switch*/
     }     /*End of For Loop*/
 
-    if (child_pid > 0)
+    for (i = 0; i < CHLD_PROCS; i++)
     {
-        while (1)
-        { /* Kill all the Children processes After the Manipulation. */
-            ret = waitpid(-1, &status, 0);
-            if (ret < 0)
-            {
-                //pause();
-                printf("semaSHM: Values of shared memory counter is:\t%d\t%d\n", shma->count1, shma->count2);
-                exit(0);
-            } //no child is in any state for this process
+        /* Kill all the Children processes After the Manipulation. */
+        if( waitpid(child_pid[i], &status, 0) == (-1) )
+        {
+            perror("SemaSHM: Erro waiting for the child Process\n");
+
+        }else{
+            if( WEXITSTATUS(status)){
+                perror("SemaSHM: status not zero\n");
+            }
         }
-        printf("semaSHM: main: we're done\n");
+
+        printf("semaSHM:from parent main: we're done\n");
+
+
     }
 
-    return 0;
+    shmDInit();
+    exit(0);
 }

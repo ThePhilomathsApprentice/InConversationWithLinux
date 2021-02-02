@@ -1,19 +1,14 @@
-gcc shmInit.c -o shmInit
-gcc semaSHM.c -o semaSHM
-gcc shmDInit.c -o shmDInit
+rm ./bin/semaSHM
 
-taskset 0x00000001 ./shmInit
+
+gcc semaSHM.c shmInit.c shmDInit.c -Werror -o ./bin/semaSHM
 
 ##Test_1: Uni Processor Scenario
-taskset 0x00000001 ./semaSHM
+taskset 0x00000001 ./bin/semaSHM
 
 ##Test_2a: Multi-Processor Scenario
-#taskset 0x00000003 ./semaSHM
+#taskset 0x00000003 ./bin/semaSHM
 
 ##Test_2b: Multi-Processor Scenario
-#taskset 0x00000007 ./semaSHM
+#taskset 0x00000007 ./bin/semaSHM
 
-
-
-#
-taskset 0x00000001 ./shmDInit
