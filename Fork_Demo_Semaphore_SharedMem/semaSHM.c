@@ -73,18 +73,18 @@ int main()
                 exit(2);
             }
             printf("semaSHM: Initial pointer value is %p\nsemaSHM: Accessed from Child:\t%d\t%d\n", shma, shma->count1, shma->count2);
-            shma->count1 += 10;
-            shma->count2 -= 20;
+            shma->count1 += 50;
+            shma->count2 -= 50;
             printf("semaSHM: Pointer value is %p\nsemaSHM: Manipulated from Child:\t%d\t%d\n", shma, shma->count1, shma->count2);
-            //printf("semaSHM: Child Exiting SHM, SHM UnLocked.\n");
-            printf("semaSHM: ---------- Child Exiting SHM, SHM UnLocked. ---------- \n");
 
             sem_op.sem_num = 0;
             sem_op.sem_op = 1; /* <-- Comment 3 */
             sem_op.sem_flg = 0;
             semop(sem_set_id, &sem_op, 1);
+            printf("semaSHM: ---------- Child Exiting SHM, SHM UnLocked. ---------- \n");
             exit(0);
-        default: /* we're at parent process. */
+        default: 
+            /* we're at parent process. */
             /* we're at Parent process. */
 
             /* wait on the semaphore, unless it's value is non-negative. */
@@ -110,13 +110,13 @@ int main()
             shma->count1 = 100;
             shma->count2 = 200;
             printf("semaSHM: Pointer value is %p\nsemaSHM: Manipulated from Parent:\t%d\t%d\n", shma, shma->count1, shma->count2);
-            //printf("semaSHM: Parent Exiting SHM, SHM UnLocked.\n");
-            printf("semaSHM: ---------- Parent Exiting SHM, SHM UnLocked. ---------- \n");
 
             sem_op.sem_num = 0;
             sem_op.sem_op = 1;
             sem_op.sem_flg = 0;
             semop(sem_set_id, &sem_op, 1);
+            printf("semaSHM: ---------- Parent Exiting SHM, SHM UnLocked. ---------- \n");
+
             continue;
 
         } /*End of Switch*/
@@ -124,7 +124,7 @@ int main()
 
     for (i = 0; i < CHLD_PROCS; i++)
     {
-        /* Kill all the Children processes After the Manipulation. */
+        /* wait for all the Children processes After the Manipulation. */
         if( waitpid(child_pid[i], &status, 0) == (-1) )
         {
             perror("SemaSHM: Erro waiting for the child Process\n");

@@ -9,13 +9,13 @@ int shmInit()
 
    unsigned long int i=0;
 
-   id =  shmget(KEY1 , 4096 , IPC_CREAT | IPC_EXCL | 0666 );
+   id =  shmget(KEY1 , 4096 , IPC_CREAT | 0666 );
    if(id<0){
        perror("shmInit:error in shmget\n"); exit(1);
     }
      
    shma = shmat(id,0,0);  
-   if(shma == (struct shmarea*)-1) { 
+   if(shma == ((struct shmarea*)-1)) { 
 	   perror("shmInit:error in shmat\n"); exit(2); 
    }
    else{
