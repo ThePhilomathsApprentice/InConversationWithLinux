@@ -14,7 +14,7 @@ int readSocket(int socket, char* buf, int len){
             printf("Client Disconnected(%d).\n",c);
             break;
         }
-    };
+    }
 
     if(c<0){
         return c;

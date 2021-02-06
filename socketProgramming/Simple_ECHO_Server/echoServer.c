@@ -22,15 +22,13 @@ int catch_signal( int sig, void (*handler)(int) ){
 void handleSignal(int sig){
 
     if(listener_d){
-        printf("Closing the Server Socket\n");
+        printf("Got %d, Closing the Server Socket:%d\n",sig, listener_d);
         if(close(listener_d) == RET_ERROR){
             error("Failed to close the socket.\n");
         }
-
     }
-    fprintf(stderr, "\nB Bye!\n");
+    printf("B Bye!\n");
     exit(0);
-
 }
 
 int main(int argc, char *argv[]){
@@ -76,6 +74,10 @@ int main(int argc, char *argv[]){
         int connect_d = accept(listener_d, (struct sockaddr *) &client_addr, &address_size);
         if( connect_d == RET_ERROR ){
             error("ERROR:Can't open secondary socket.'\n");
+        }else{
+            printf("Client Connected:%d ;) \n", connect_d );
+            //TODO: create a thread and pass the socket to him to handle the request.
+
         }
 
         if( readSocket( connect_d , recvBuff, sizeof(recvBuff) ) == RET_ERROR ){
@@ -84,13 +86,14 @@ int main(int argc, char *argv[]){
             fprintf(stderr, "ERROR:reading from socket failed, Closed Client\n");
             
         }else{
-            printf("%s",recvBuff);
+            printf("%s\n",recvBuff);
             if ( sendSocket(connect_d, recvBuff ) == RET_ERROR ){
                 fprintf(stderr, "ERROR: send failed.\n");
             }
         
         }
 
+        printf("Closing Socket: %d\n", connect_d );
         close(connect_d);
     }
     
