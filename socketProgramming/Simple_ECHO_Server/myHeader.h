@@ -8,8 +8,12 @@
 
 #include <errno.h>
 
+/*Header File for threads */
 #include<pthread.h> 
 #include<signal.h>
+
+
+void *workerThread(void* _socket);
 
 #define RET_ERROR (-1)
 #define PORT 3000

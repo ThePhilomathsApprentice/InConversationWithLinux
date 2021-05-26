@@ -6,17 +6,19 @@ int readSocket(int socket, char* buf, int len){
     int slen = len;
     int c = recv(socket, s, slen, 0) ;
     while( (c>0) && (s[c-1] != '\n')){
+        printf("Entered While(1).\n");
         s += c;
         slen == c;
 
         c = recv(socket, s, slen, 0);
-        if( c<=0){
+        if( c<0){
             printf("Client Disconnected(%d).\n",c);
             break;
         }
     }
 
     if(c<0){
+        printf("ERROR: Got out of the while loop(%d).\n",c);
         return c;
 
     }else if( c== 0){
