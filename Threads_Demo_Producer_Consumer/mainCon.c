@@ -2,17 +2,26 @@
 
 int main()
 {
-  int ret; //variable to check the return values of the system call APIs
-  int shm_id; //variable to save the shared memory returned from the shmget.
+  /* Variable to check the return values of the system call APIs
+   */
+  int ret;
 
-  shm_id = shmget( KEY , 4096 , IPC_CREAT | 0600); // create and/or get the shared memory 
+  /* variable to save the shared memory returned from the shmget.
+   */
+  int shm_id;
+
+  /* Create and/or get the shared memory 
+   */
+  shm_id = shmget( KEY , 4096 , IPC_CREAT | 0600);
   if (shm_id < 0 )
   {
     perror("error in creating the shared memory");
     exit(1);
   }
 
-  shma = shmat(shm_id, 0, 0); // attach the shared memory to the virtual memory space of the current Process.
+  /* Attach the shared memory to the virtual memory space of the current Process.
+   */
+  shma = shmat(shm_id, 0, 0);
   if (shma < 0)
   {
     perror("error in attaching the shared memory");
@@ -27,34 +36,64 @@ int main()
     exit(ret);
   }
 
-  pthread_join( ThId , NULL); // This process/application will not be terminated without terminating rthe thread it has started.
+  /* This process/application will not be terminated without terminating the thread it has started.
+   */
+  pthread_join( ThId , NULL);
 
   exit(0);
-}
+}//main:end
 
 void * threadCons(void *ConsVPtr){
-  char value; // creating a buffer variable to save the data recieved from the producer temporarily.
-    printf("----------------Consumer Entered CSection----------------\nWaiting for the Producer to produce content to be read here, and free the semaphore...\n");
+  /* Creating a buffer variable to save the data recieved from the producer temporarily.
+   */
+  char value;
+    printf("----------------Consumer Entered CSection----------------\n \
+            Waiting for the Producer to produce content to be read here, \
+            and free the semaphore...\n");
   while(1){
     
-    sem_wait( &(shma->sema2) ); // Decrement the thread semaphore to enter the critical section and modify.
-    pthread_mutex_lock ( &(shma->mutex) ); // lock the mutex to get extra protection.
+    /* Decrement the thread semaphore to enter the critical section and modify.
+     */
+    sem_wait( &(shma->sema2) );
+
+    /* Lock the mutex to get extra protection.
+     */
+    pthread_mutex_lock ( &(shma->mutex) );
     
     if(shma->UsedSlotCount != 0){
       value = shma->BufArea[shma->RdIndex];
       
-      printf("Consumer:%c\n",value); 
-      shma->RdIndex = (shma->RdIndex+1)%shma->BufSizeMax; // as the buffer is circular I increment the read index untill it reaches BuffSizeMax, after that it will automatically be reinitialized to 0.
-      shma->UsedSlotCount--; //after reading one character, decrement the Used Slot Count variable, because 1 data-content has been consumed.
+      printf("Consumer:%c\n",value);
+
+      /* As the buffer is circular, increment the read index untill it reaches BuffSizeMax,
+       * after that it will automatically be reinitialized to 0.
+       */
+      shma->RdIndex = (shma->RdIndex+1)%shma->BufSizeMax;
+
+      /* After reading one character,
+       * decrement the Used Slot Count variable,
+       * because 1 data-content has been consumed.
+       */
+      shma->UsedSlotCount--;
     
     }
 
-    pthread_mutex_unlock ( &(shma->mutex) );  // UNlock the mutex which was used to get low-level protection.
-    sem_post( &(shma->sema1) ); // Increment the other thread semaphore to exit the critical section and indicate the producer to get active and start producing the data..
+    /* UnLock the mutex which was used to get low-level protection.
+    */
+    pthread_mutex_unlock ( &(shma->mutex) );
+
+    /* Increment the other thread semaphore to exit the critical section
+     * and indicate the producer to get active and start producing the data..
+     */
+    sem_post( &(shma->sema1) );
     
     
   }//threadCons:while:end
-    printf("----------------Consumer Exited CSection----------------\n"); // indicates that the thread has exited the critical section and the producer must produce new data now..
+  
+  /* Indicates that the thread has exited the critical section and
+   * the producer must produce new data now..
+   */
+  printf("----------------Consumer Exited CSection----------------\n");
 
   pthread_exit(0);
 
