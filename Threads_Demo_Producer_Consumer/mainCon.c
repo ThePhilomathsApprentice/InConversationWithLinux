@@ -15,7 +15,7 @@ int main()
   shm_id = shmget( KEY , 4096 , IPC_CREAT | 0600);
   if (shm_id < 0 )
   {
-    perror("error in creating the shared memory");
+    perror("Error in creating the shared memory");
     exit(1);
   }
 
