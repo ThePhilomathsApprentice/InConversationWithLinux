@@ -25,7 +25,7 @@ int main()
     exit(2);
   }
 
-  
+
   /* Thread Semaphore initialization
    */
 
@@ -45,7 +45,7 @@ int main()
     exit(4);
   }
 
-  
+
   /* Thread Mutex initialization
    */
 
@@ -85,7 +85,7 @@ void * threadProd(void *ProdVPtr){
     // indicate that the thread has gotten access to the  Thread Semaphore.
     printf("---------Producer Entered CSection---------\n \
             Waiting for the User to input Character or a String...\n");
-  
+
   while(1){
 
     // Decrement the thread semaphore to enter the critical section and modify.
@@ -93,7 +93,7 @@ void * threadProd(void *ProdVPtr){
 
     // lock the mutex to get extra protection.
     pthread_mutex_lock( &(shma->mutex) );
-    
+
     value = getchar();
 
     if (shma->UsedSlotCount < shma->BufSizeMax){
@@ -109,7 +109,7 @@ void * threadProd(void *ProdVPtr){
       // increment the Used Slot Count variable,
       // because 1 character has been produced and the slot has been consumed.
       shma->UsedSlotCount++;
-    
+
     }
 
     // UnLock the mutex which was used to get low-level protection.
@@ -118,8 +118,8 @@ void * threadProd(void *ProdVPtr){
     // Increment the other thread semaphore to exit the critical section and
     // indicate the consumer to get active and start consuming the data..
     sem_post( &(shma->sema2));
-    
-    
+
+
   }//threadProd:while:end
 
   // indicates that the thread has exited the critical section and
