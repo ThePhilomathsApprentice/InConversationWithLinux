@@ -26,4 +26,4 @@ union semun
 typedef struct shmarea {
   int count1;
   int count2;
-}SHM; 
+}SHM;

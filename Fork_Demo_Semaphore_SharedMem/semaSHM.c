@@ -83,7 +83,7 @@ int main()
             semop(sem_set_id, &sem_op, 1);
             printf("semaSHM: ---------- Child Exiting SHM, SHM UnLocked. ---------- \n");
             exit(0);
-        default: 
+        default:
             /* we're at parent process. */
             /* we're at Parent process. */
 
